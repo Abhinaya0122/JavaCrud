@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Management System</title>
+    <style>
+        *{
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins',sans-serif;
+        }
+        body{
+            display: flex;
+            height: 100vh;
+            justify-content: center;
+            align-items: center;
+            background: linear-gradient(135deg, #71b7e6,#9b59b6);
+
+        }
+        .container{
+            max-width: 700px;
+            width:100%;
+            background: #ffffff;
+            padding: 25px 30px;
+            border-radius: 5px;
+        }
+        .container .title{
+            font-size: 25px;
+            font-weight: 500;
+            position: relative;
+        }
+        .container .title::before{
+            content :'';
+            position: absolute;
+            left: 0;
+            bottom: 0;
+            height: 3px;
+            width: 30px;
+            background: linear-gradient(135deg, #71b7e6,#9b59b6);
+        }
+        .container form .user-details{
+            justify-content: space-between;
+        }
+        form .user-details .input-box{
+            margin: 20px 0 12px 0;
+            width: calc(100%/2- 20px);
+        }
+        .user-details .input-box input{
+            height: 45px;
+            width: 100%;
+            outline: none;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            padding-left: 15px;
+        }
+        form .button{
+            height: 45px;
+            margin: 45px 0;
+        }
+        form .button button{
+            height: 100%;
+            width: 100%;
+            outline: none;
+            color: #ffffff;
+            margin: 4px ;
+            color: #333333;
+            border-color: #9b59b6;
+            box-shadow: #9b59b6;
+            font-weight: bold;
+            font-family: Algerian;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin-top: 20px;
+        }
+        th, td {
+            border: 1px solid #dddddd;
+            text-align: left;
+            padding: 8px;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="title">
+        Registration
+    </div>
+    <form id="addStudentForm">
+        <div class="user-details">
+            <div class="input-box">
+                <label for="firstName">FirstName:</label>
+                <input type="text" placeholder="Enter your Firstname" id="firstName" name="firstName" required>
+            </div>
+            <div class="input-box">
+                <label for="lastName">LastName:</label>
+                <input type="text" placeholder="Enter your lastname" id="lastName" name="lastName" required>
+            </div>
+            <div class="input-box">
+                <label for="emailId">Email:</label>
+                <input type="text" placeholder="Enter your email" id="emailId" name="emailId" required>
+            </div>
+            <div class="button">
+                <button type="button" onclick="addStudent()">Add Student</button>
+                <button type="button" onclick="openStudentTable()">View Student Table</button>
+            </div>
+        </div>
+    </form>
+</div>
+<script>
+    // Fetch all students on page load
+    fetchStudents();
+
+    function fetchStudents() {
+        fetch('http://localhost:8080/api/v1/students1')
+            .then(response => response.json())
+            .then(data => displayStudents(data))
+            .catch(error => console.error('Error:', error));
+    }
+
+    function displayStudents(students) {
+        const tableBody = document.getElementById('studentTableBody');
+
+        if (!tableBody) {
+            console.error('Table body element not found.');
+            return;
+        }
+
+        tableBody.innerHTML = '';
+
+        students.forEach(student => {
+            const row = tableBody.insertRow();
+            row.insertCell(0).textContent = student.rollno;
+            row.insertCell(1).textContent = student.firstName;
+            row.insertCell(2).textContent = student.lastName;
+            row.insertCell(3).textContent = student.emailId;
+
+            const deleteButton = document.createElement('button');
+            deleteButton.textContent = 'Delete';
+            deleteButton.onclick = function() {
+                deleteStudent(student.rollno);
+            };
+
+            row.insertCell(4).appendChild(deleteButton);
+        });
+    };
+
+    function addStudent() {
+        const addStudentForm = document.getElementById('addStudentForm');
+        const formData = new FormData(addStudentForm);
+
+        fetch('http://localhost:8080/api/v1/students1/students1', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(Object.fromEntries(formData))
+        })
+            .then(response => response.json())
+            .then(data => {
+                fetchStudents(); // Refresh the student list after adding a new student
+                addStudentForm.reset();
+            })
+            .catch(error => console.error('Error:', error));
+    }
+
+    function deleteStudent(rollno) {
+        fetch(`http://localhost:8080/api/v1/students1/${rollno}`, {
+            method: 'DELETE'
+        })
+            .then(response => {
+                if (response.ok) {
+                    fetchStudents(); // Refresh the student list after deleting a student
+                } else {
+                    console.error('Error:', response.status);
+                }
+            })
+            .catch(error => console.error('Error:', error));
+    }
+    function openStudentTable() {
+        // Redirect to a new HTML page (e.g., studentTable.html) containing the student table
+        window.location.href = 'studentTable.html';
+    }
+
+
+</script>
+
+</body>
+</html>
